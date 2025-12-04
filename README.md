@@ -1,54 +1,56 @@
-# Actix Web + Diesel Async Starter Template
+# Actix Diesel Async Starter
 
-This is a starter template for building high-performance web applications using Rust, Actix Web, and Diesel Async.
+Welcome.
 
-## Features
+## The Story
 
-- **Actix Web**: Powerful, pragmatic, and extremely fast web framework for Rust.
-- **Diesel Async**: Asynchronous database interaction using Diesel.
-- **Workspace Structure**: Organized into `api`, `domain`, and `infrastructure` crates for better separation of concerns.
-- **Docker Support**: Ready-to-use Dockerfile for containerization.
+I didn't set out to build a starter template. I just wanted to build an application.
 
-## Getting Started
+My requirements were specific: **Actix Web**, **Diesel**, and **Diesel Async**. I know, I know. Most people just use Diesel with `r2d2` and call it a day. But I couldn't stand the blocking nature of it. It felt wrong to have a highly concurrent web server waiting on synchronous database threads. I wanted true async, all the way down.
 
-### Prerequisites
+So I went looking. I searched everywhere for a solid template that brought these pieces together. I found a few, but they were either outdated, broken, or just didn't feel right.
 
-- Rust (latest stable)
-- Docker (optional, for running Postgres)
-- PostgreSQL
+Then came the real headache: **TLS**.
 
-### Setup
+I tried the naive approach. I used `AsyncPgConnection::establish`. It looked innocent enough. But on my Windows machine, it greeted me with this:
 
-1. Clone the repository.
-2. Copy `.env.example` to `.env` and update the values.
-   ```bash
-   cp .env.example .env
-   ```
-3. Start the database (if using Docker):
-   ```bash
-   docker run --name postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=db_name -p 5432:5432 -d postgres
-   ```
-4. Install Diesel CLI (with postgres features):
-   ```bash
-   cargo install diesel_cli --no-default-features --features postgres
-   ```
-5. Run migrations:
-   ```bash
-   diesel setup
-   diesel migration run
-   ```
-6. Run the server:
-   ```bash
-   cargo run
-   ```
+```
+thread 'main' (18708) panicked at migrator\src\main.rs:23:10:
+Failed to connect to database: CouldntSetupConfiguration(DatabaseError(UnableToSendCommand, "error performing TLS handshake"))
+```
 
-## Project Structure
+I spent hours debugging this. It turns out, getting `diesel_async` to play nice with TLS isn't as straightforward as the docs make it seem.
 
-- `api`: Contains the application entry point, routes, and HTTP handlers.
-- `domain`: Contains the business logic and data models.
-- `infrastructure`: Contains database connections and external service integrations.
-- `migrations`: Database migrations.
+So, I had to roll up my sleeves. I ended up writing a custom connection implementation using `rustls`, `tokio-postgres`, and `webpki-roots` using the `ManagerConfig.custom_setup` (Who does that?), just to get past the TLS issues. It was a lot of code for something that should be simple — Well, I shouldn't have expected to find it simple; after all, it's not JavaScript.(Big kudos to Gemini 3 for the assist on the implementation details). The result? A fully async, stable TLS connection that actually works.
+
+## Why This Exists
+
+This repository is the result of that frustration. It's the starter I wish I had found.
+
+I also took the liberty of spicing up the architecture. I was tired of seeing the same old patterns everywhere, so I designed this around a "Double Generic `ApiResponse`" structure, where each endpoint designs its own response success and failure structures.
+
+### The Architecture
+
+-   **`app/`**: The domain logic and types.
+-   **`infra/`**: The database and external services.
+-   **`api/`**: The HTTP layer.
+
+The core idea is simple:
+1.  **`infra`** returns a `Result<S, E>`.
+2.  **`api`** converts that into an `ApiResponse<S, E>`.
+3.  **`ApiResponse`** handles the conversion to `HttpResponse`.
+
+It keeps the concerns beautifully separated.
 
 ## Documentation
 
-See the `docs` folder for more detailed information.
+1. **`utoipa`**: For open-api documentaion
+2. **`docs`**: Jot anything that needs to be jot down.
+
+## Getting Started
+
+1.  Clone the repo.
+2.  Check `.env.example` and set up your `.env`.
+3.  Run `cargo run`.
+
+I hope this saves you the headache I went through. Enjoy.

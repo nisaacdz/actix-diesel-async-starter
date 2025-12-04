@@ -6,7 +6,7 @@ Welcome.
 
 I didn't set out to build a starter template. I just wanted to build an application.
 
-My requirements were specific: **Actix Web**, **Diesel**, and **Diesel Async**. I know, I know. Most people just use Diesel with `r2d2` and call it a day. But I couldn't stand the blocking nature of it. It felt wrong to have a highly concurrent web server waiting on synchronous database threads. I wanted true async, all the way down.
+My requirements were specific: **Actix Web**, **Diesel**, and **Diesel Async**. I know, I know. Most people just use Diesel with `r2d2` and call it a day. But I couldn't stand the blocking nature of it. It felt wrong to have a highly concurrent web server waiting on synchronous database threads. Other projects just use `sqlx`, but I don't want to use it either. I wanted true async, and I wanted to use `diesel`.
 
 So I went looking. I searched everywhere for a solid template that brought these pieces together. I found a few, but they were either outdated, broken, or just didn't feel right.
 

@@ -1,43 +1,29 @@
-FROM rust:1.83-slim-bookworm as builder
+# Builder stage
+FROM rust:1.74-slim as builder
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
+# Install dependencies for building (including libpq for diesel)
+RUN apt-get update && apt-get install -y libpq-dev pkg-config
 
-# Copy manifests
-COPY Cargo.toml Cargo.lock ./
-COPY api/Cargo.toml api/Cargo.toml
-COPY domain/Cargo.toml domain/Cargo.toml
-COPY infrastructure/Cargo.toml infrastructure/Cargo.toml
-
-# Create dummy source files to cache dependencies
-RUN mkdir -p api/src domain/src infrastructure/src
-RUN echo "fn main() {}" > api/src/main.rs
-RUN echo "" > domain/src/lib.rs
-RUN echo "" > infrastructure/src/lib.rs
-
-# Build dependencies
-RUN cargo build --release
-
-# Copy actual source code
 COPY . .
 
-# Touch main.rs to force rebuild
-RUN touch api/src/main.rs
+# Build the release binary for the api package
+RUN cargo build --release -p api
 
-# Build application
-RUN cargo build --release
-
+# Runtime stage
 FROM debian:bookworm-slim
 
 WORKDIR /app
 
 # Install runtime dependencies
-RUN apt-get update && apt-get install -y libssl-dev ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y libpq-5 ca-certificates && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/target/release/api /app/server
+# Copy the binary from the builder stage
+COPY --from=builder /app/target/release/api /app/hserver
 
+# Expose the port
 EXPOSE 8080
 
-CMD ["./server"]
+# Run the binary
+CMD ["./hserver"]

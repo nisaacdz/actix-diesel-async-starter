@@ -28,3 +28,4 @@ tracing-actix-web = "0.7.19"
 bigdecimal = { workspace = true, features = ["serde"] }
 utoipa = { version = "5.4.0", features = ["actix_extras", "chrono", "uuid"] }
 utoipa-swagger-ui = { version = "9.0.2", features = ["actix-web"] }
+config = { workspace =  true }

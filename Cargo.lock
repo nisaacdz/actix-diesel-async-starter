@@ -20,6 +20,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "actix-diesel-async-starter"
+version = "0.1.0"
+dependencies = [
+ "actix-web",
+ "api",
+ "app",
+ "config",
+ "dotenvy",
+ "infra",
+ "migrator",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "actix-http"
 version = "3.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -282,6 +298,7 @@ dependencies = [
  "bincode 2.0.1",
  "chacha20poly1305",
  "chrono",
+ "config",
  "derive_more",
  "diesel",
  "diesel-async",
@@ -1500,22 +1517,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c49c37c09c17a53d937dfbb742eb3a961d65a994e6bcdcf37e7399d0cc8ab5e"
 dependencies = [
  "digest",
-]
-
-[[package]]
-name = "hserver"
-version = "0.1.0"
-dependencies = [
- "actix-web",
- "api",
- "app",
- "config",
- "dotenvy",
- "infra",
- "migrator",
- "tokio",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]

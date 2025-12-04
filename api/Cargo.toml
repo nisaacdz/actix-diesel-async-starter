@@ -7,7 +7,6 @@ edition = "2024"
 actix-web = { workspace = true, features = ["secure-cookies"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
-config = { workspace = true }
 dotenvy = { workspace = true }
 app = { workspace = true }
 infra = { workspace = true }

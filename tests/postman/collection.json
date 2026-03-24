@@ -1,0 +1,185 @@
+{
+  "info": {
+    "name": "TransitGH E2E Tests",
+    "_postman_id": "transitgh-e2e",
+    "description": "End-to-end API tests for TransitGH.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health & Docs",
+      "item": [
+        {
+          "name": "OpenAPI spec loads",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api-docs/openapi.json"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Has openapi field', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.openapi).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stops",
+      "item": [
+        {
+          "name": "Search stops near Accra",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/stops?lat=5.6037&lng=-0.1870&radius=50000&isTerminal=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "stops"],
+              "query": [
+                { "key": "lat", "value": "5.6037" },
+                { "key": "lng", "value": "-0.1870" },
+                { "key": "radius", "value": "50000" },
+                { "key": "isTerminal", "value": "true" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response has items array and total', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.items).to.be.an('array');",
+                  "    pm.expect(json.total).to.be.a('number');",
+                  "});",
+                  "pm.test('Stops have location with lat/lng', function () {",
+                  "    var json = pm.response.json();",
+                  "    if (json.items.length > 0) {",
+                  "        var stop = json.items[0];",
+                  "        pm.expect(stop.location).to.have.property('lat');",
+                  "        pm.expect(stop.location).to.have.property('lng');",
+                  "        pm.expect(stop.distance).to.be.a('number');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bus Schedules",
+      "item": [
+        {
+          "name": "Search schedules (no filters)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/bus-schedules"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response has items and total', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.items).to.be.an('array');",
+                  "    pm.expect(json.total).to.be.a('number');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search schedules with period",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/bus-schedules?from=2026-01-01T00:00:00Z&to=2027-01-01T00:00:00Z",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "bus-schedules"],
+              "query": [
+                { "key": "from", "value": "2026-01-01T00:00:00Z" },
+                { "key": "to", "value": "2027-01-01T00:00:00Z" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('All departures within period', function () {",
+                  "    var json = pm.response.json();",
+                  "    var from = new Date('2026-01-01T00:00:00Z');",
+                  "    var to = new Date('2027-01-01T00:00:00Z');",
+                  "    json.items.forEach(function (s) {",
+                  "        var dep = new Date(s.departureTime);",
+                  "        pm.expect(dep >= from && dep < to).to.be.true;",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Operators",
+      "item": [
+        {
+          "name": "List operators",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/operators"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response has items array', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.items).to.be.an('array');",
+                  "    pm.expect(json.items.length).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

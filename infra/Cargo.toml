@@ -4,25 +4,34 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
-diesel = { workspace = true, features = ["postgres_backend", "chrono", "uuid", "numeric"] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "fs"] }
+diesel = { workspace = true, features = ["postgres", "postgres_backend", "chrono", "uuid", "numeric", "serde_json"] }
 diesel-async = { workspace = true, features = ["postgres", "deadpool"] }
-deadpool = "0.12"
+deadpool = "0.13.0"
 tokio-postgres-rustls = "0.13"
 tokio-postgres = "0.7"
 rustls = { workspace = true }
-rustls-platform-verifier = "0.6.2"
 webpki-roots = "1.0.4"
-futures = "0.3"
 uuid = { workspace = true, features = ["v4"] }
 chrono = { workspace = true }
-app = { workspace = true }
 config = { workspace = true }
-bigdecimal = "0.4.9"
+derive_more = { workspace = true, features = ["full"] }
 diesel-derive-enum = { workspace = true, features = ["postgres"] }
+url = { workspace = true }
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+bitcode = { workspace = true }
+chacha20poly1305 = "0.10"
+rand = { workspace = true }
+base64 = { workspace = true }
+argon2 = "0.5.3"
+humantime-serde = "1.1.1"
+utoipa = { workspace = true }
+tracing = { workspace = true }
+hex = { workspace = true }
+thiserror = "2.0.18"
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["full"] }
 dotenvy = { workspace = true }
-
-

@@ -1,13 +1,17 @@
 [server]
-host = "127.0.0.1"
+host = "0.0.0.0"
 port = 8080
 
-[database]
-max_connections = 10
-
 [application]
-name = "Hotel Plus"
+name = "Starter API"
 environment = "development"
 
 [security]
-session_duration = 3600
+session_expiry = "3d"
+refresh_threshold = "30m"
+login_otp_expiry_window = "5m"
+signup_otp_expiry_window = "15m"
+cookie_name = "auth-token"
+
+[clients]
+website = "http://localhost:3000"

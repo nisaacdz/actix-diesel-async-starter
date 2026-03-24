@@ -1,0 +1,89 @@
+name: Continuous Deployment
+
+on:
+  # 1. Listen for the completion of the CI workflow
+  workflow_run:
+    workflows: ["CI"] # This MUST exactly match the 'name:' defined at the top of your ci.yml
+    types:
+      - completed
+    branches:
+      - main
+      
+  # 2. Allow manual triggers to deploy to specific environments (like Production)
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - production
+
+env:
+  IMAGE_NAME: transitgh-api
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment || 'development' }}
+    runs-on: ubuntu-latest
+    
+    # 3. CRUCIAL: Only proceed if the CI run was successful OR if triggered manually
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    
+    # 4. Bind this job to a specific GitHub Environment to load the correct variables
+    environment: ${{ inputs.environment || 'development' }}
+    
+    # 5. Required permissions for keyless Workload Identity Federation (OIDC)
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 6. Authenticate to Google Cloud using the environment-specific variables
+      # - name: Google Auth
+      #   id: auth
+      #   uses: google-github-actions/auth@v2
+      #   with:
+      #     workload_identity_provider: ${{ vars.WIF_PROVIDER_NAME }}
+      #     service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      # 7. Setup Docker to push to Google Artifact Registry
+      # - name: Docker Auth
+      #   run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev
+
+      # 8. Enable BuildKit for advanced cargo-chef caching
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v3
+
+      # 9. Create a dynamic Image URL tagged with the specific Git commit SHA
+      # - name: Set Image URL
+      #   id: image-url
+      #   run: |
+      #     echo "URL=${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.ARTIFACT_REPO }}/${{ env.IMAGE_NAME }}:${{ github.sha }}" >> $GITHUB_ENV
+
+      # 10. Build and Push Container using native GitHub Actions cache (separated by environment scope)
+      # - name: Build and Push Container
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: .
+      #     push: true
+      #     tags: ${{ env.URL }},${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.ARTIFACT_REPO }}/${{ env.IMAGE_NAME }}:latest
+      #     cache-from: type=gha,scope=${{ github.workflow }}-${{ inputs.environment || 'development' }}
+      #     cache-to: type=gha,mode=max,scope=${{ github.workflow }}-${{ inputs.environment || 'development' }}
+
+      # 11. Deploy the new image to Cloud Run
+      # - name: Deploy to Cloud Run
+      #   id: deploy
+      #   uses: google-github-actions/deploy-cloudrun@v2
+      #   with:
+      #     service: ${{ vars.CLOUD_RUN_SERVICE_NAME }}
+      #     region: ${{ vars.GCP_REGION }}
+      #     image: ${{ env.URL }}
+          
+      # - name: Show Output
+      #   run: echo "Successfully deployed to ${{ steps.deploy.outputs.url }}"

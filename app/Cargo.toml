@@ -5,12 +5,26 @@ edition = "2024"
 
 [dependencies]
 serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
 uuid = { workspace = true, features = ["serde", "v4"] }
 chrono = { workspace = true, features = ["serde"] }
-actix-web = { workspace = true }
-bincode = "2.0.1"
-bigdecimal = { workspace = true, features = ["serde"] }
-utoipa = { version = "5.4.0", features = ["actix_extras", "chrono", "uuid"] }
-argon2 = "0.5.3"
+bitcode = { workspace = true }
+utoipa = { workspace = true }
 rand = { workspace = true }
-rand_core = { version = "0.6", features = ["getrandom"] }
+diesel = { workspace = true, features = ["postgres", "postgres_backend"] }
+diesel-async = { workspace = true, features = ["postgres", "deadpool"] }
+derive_more = { workspace = true, features = ["full"] }
+infra = { workspace = true }
+tracing = { workspace = true }
+futures-util = { workspace = true }
+validator = { workspace = true, features = ["derive"] }
+tokio = { workspace = true, features = ["fs"] }
+anyhow = { workspace = true }
+hmac = "0.12.1"
+sha2 = "0.10.9"
+hex = { workspace = true }
+base64 = { workspace = true }
+
+[dev-dependencies]
+bytes = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }

@@ -10,5 +10,4 @@ diesel-async = { workspace = true, features = ["postgres", "deadpool", "migratio
 diesel_migrations = { version = "2.3.0", features = ["postgres"] }
 tokio = { workspace = true, features = ["full"] }
 config = { workspace = true }
-app = { workspace = true }
 infra = { workspace = true }

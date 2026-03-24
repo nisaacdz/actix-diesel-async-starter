@@ -1,2 +1,6 @@
 target
+.git
 .github
+.env*
+*.swp
+tmp

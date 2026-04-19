@@ -1,0 +1,58 @@
+[package]
+name = "actix-diesel-async-starter"
+version = "0.1.0"
+edition = "2024"
+
+[workspace]
+members = [
+    "app",
+    "infra",
+    "api",
+    "migrator"
+]
+resolver = "2"
+
+[workspace.dependencies]
+actix-web = "4.12.1"
+anyhow = "1.0.102"
+base64 = "0.22"
+bitcode = { version = "0.6.9", features = ["uuid"] }
+bytes = "1.11"
+chrono = { version = "0.4.43", features = ["serde"] }
+config = "0.15.19"
+derive_more = "2.1.1"
+diesel = "2.3.6"
+diesel-async = "0.8.0"
+diesel-derive-enum = "2.1.0"
+dotenvy = "0.15"
+futures-util = "0.3"
+hex = "0.4.3"
+postgis_diesel = { version = "3.1.0", features = ["serde"] }
+rand = "0.10.0"
+reqwest = { version = "0.13.1", features = ["json"] }
+rustls = "0.23.36"
+serde = "1.0"
+serde_json = "1.0.149"
+tokio = "1.49.0"
+tracing = "0.1.44"
+tracing-subscriber = "0.3.22"
+validator = "0.20.0"
+url = "2.5.8"
+utoipa = { version = "5.4.0", features = ["actix_extras", "chrono", "uuid"] }
+uuid = { version = "1.20.0", features = ["serde", "v7"] }
+app = { path = "app" }
+infra = { path = "infra" }
+
+[dependencies]
+api = { path = "api" }
+app = { path = "app" }
+infra = { path = "infra" }
+actix-web = { workspace = true }
+dotenvy = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+tokio = { workspace = true, features = ["full"] }
+config = { workspace = true }
+
+[features]
+ci = ["app/ci"]

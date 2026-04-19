@@ -1,0 +1,114 @@
+{
+	"info": {
+		"name": "02 Authentication",
+		"_postman_id": "actix-diesel-async-starter-auth",
+		"description": "Authentication and Token management tests.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "User Login Start",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"phone\": \"+233240000000\"}"
+				},
+				"url": "{{baseUrl}}/api/v1/auth/login/start"
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "User Login Complete",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"phone\": \"+233240000000\", \"otp\": \"000000\"}"
+				},
+				"url": "{{baseUrl}}/api/v1/auth/login/complete"
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+							"var jsonData = pm.response.json();",
+							"pm.expect(jsonData.accessToken).to.be.a('string');",
+							"pm.environment.set('access_token', jsonData.accessToken);",
+							"pm.environment.set('refresh_token', jsonData.refreshToken);"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Admin Login",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"email\": \"admin1@actix-diesel-async-starter.app\", \"password\": \"password\"}"
+				},
+				"url": "{{baseUrl}}/api/v1/admin/auth/login"
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+							"var jsonData = pm.response.json();",
+							"pm.environment.set('admin_access_token', jsonData.accessToken);"
+						]
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "access_token",
+			"value": ""
+		},
+		{
+			"key": "refresh_token",
+			"value": ""
+		},
+		{
+			"key": "admin_access_token",
+			"value": ""
+		}
+	]
+}

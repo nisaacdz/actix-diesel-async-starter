@@ -1,0 +1,9 @@
+# Ignore all target directories everywhere
+target/
+
+# Ignore all env files except .env.example
+.env
+.env.*
+!.env.example
+
+tmp/

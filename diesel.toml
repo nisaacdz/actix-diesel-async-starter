@@ -1,0 +1,8 @@
+# For documentation on how to configure this file,
+# see diesel.rs/guides/configuring-diesel-cli
+
+[print_schema]
+file = "infra/src/schema/public.rs"
+import_types = ["diesel::sql_types::*", "postgis_diesel::sql_types::*"]
+except_custom_type_definitions = ["Geometry", "Geography"]
+custom_type_derives = ["diesel::query_builder::QueryId", "diesel::sql_types::SqlType"]

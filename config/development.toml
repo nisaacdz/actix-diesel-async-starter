@@ -1,0 +1,8 @@
+[database]
+max_connections = 10
+
+[application]
+environment = "development"
+
+[clients]
+website = "https://localhost:3000"

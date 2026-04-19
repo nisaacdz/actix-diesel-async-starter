@@ -1,0 +1,39 @@
+[package]
+name = "infra"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "fs"] }
+diesel = { workspace = true, features = ["postgres", "postgres_backend", "chrono", "uuid", "numeric", "serde_json"] }
+postgis_diesel = { workspace = true }
+diesel-async = { workspace = true, features = ["postgres", "deadpool"] }
+deadpool = "0.13.0"
+tokio-postgres-rustls = "0.13"
+tokio-postgres = "0.7"
+rustls = { workspace = true }
+webpki-roots = "1.0.4"
+uuid = { workspace = true, features = ["v4"] }
+chrono = { workspace = true }
+config = { workspace = true }
+derive_more = { workspace = true, features = ["full"] }
+diesel-derive-enum = { workspace = true, features = ["postgres"] }
+url = { workspace = true }
+reqwest = { workspace = true }
+futures-util = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+bitcode = { workspace = true }
+rand = { workspace = true }
+base64 = { workspace = true }
+argon2 = "0.5.3"
+humantime-serde = "1.1.1"
+utoipa = { workspace = true }
+tracing = { workspace = true }
+hex = { workspace = true }
+redis = { version = "1.0.5", features = ["tokio-comp", "connection-manager"] }
+pasetors = { version = "0.7.8", features = ["v4", "serde"] }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["full"] }
+dotenvy = { workspace = true }

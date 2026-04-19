@@ -1,0 +1,36 @@
+[server]
+host = "0.0.0.0"
+port = 8080
+
+[application]
+name = "Actix Diesel-Async Starter"
+environment = "development"
+
+[security]
+access_token_expiry = "1h"
+refresh_token_expiry = "7d"
+login_otp_expiry_window = "5m"
+signup_otp_expiry_window = "15m"
+
+[clients]
+website = "http://localhost:3154"
+admin_panel = "http://localhost:3000"
+
+[smtp]
+port = 587
+
+[frogsms]
+base_url = "https://frogapi.wigal.com.gh/api/v3/sms/send"
+username = "altsolutionsgh"
+
+[regulation]
+vat_percentage = 20.0
+
+[service]
+seat_lock_duration = "2m"
+trotro_pass_expiry = "7d"
+
+[xcel]
+base_url = "https://api.xcelapp.com"
+timeout = "30s"
+webhook_url = "https://deployed-url/api/v1/webhooks/xcel"

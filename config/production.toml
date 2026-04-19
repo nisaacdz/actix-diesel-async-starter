@@ -1,0 +1,9 @@
+[database]
+max_connections = 50
+
+[application]
+environment = "production"
+
+[clients]
+website = ""
+

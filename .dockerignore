@@ -1,0 +1,16 @@
+target/
+.git/
+.github/
+.env*
+*.swp
+tmp/
+tests/
+docs/
+scripts/
+Dockerfile
+.dockerignore
+.gitignore
+.devcontainer/
+README.md
+*.md
+compose.yaml

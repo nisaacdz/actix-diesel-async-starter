@@ -1,0 +1,153 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  # Speeds up CI builds slightly
+  CARGO_INCREMENTAL: 0 
+
+jobs:
+  # ── Job 1: Lint + Test (fast, populates cache) ─────────────────────
+  check:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    env:
+      APP__DATABASE__URL: ${{ secrets.APP__DATABASE__URL }}
+      APP__SECURITY__KEY: ${{ secrets.APP__SECURITY__KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "actix-diesel-async-starter-ci-cache"
+
+      - name: Check formatting
+        run: cargo fmt -- --check || true
+
+      - name: Run clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Run unit tests
+        run: cargo test --workspace --locked
+
+  # ── Job 2: E2E Tests (uses cache from Job 1) ───────────────────────
+  e2e:
+    name: E2E Tests (Newman)
+    needs: check 
+    runs-on: ubuntu-latest
+    environment: ci
+
+    env:
+      APP__SECURITY__KEY: ${{ secrets.APP__SECURITY__KEY }}
+      
+      APP__FROGSMS__API_KEY: ${{ secrets.APP__FROGSMS__API_KEY }}
+      APP__FROGSMS__SENDER_ID: ${{ vars.APP__FROGSMS__SENDER_ID }}
+      
+      APP__REDIS__URL: ${{ secrets.APP__REDIS__URL }}
+      
+      APP__QR__MASTER_KEY: ${{ secrets.APP__QR__MASTER_KEY }}
+      
+      APP__XCEL__API_KEY: ${{ secrets.APP__XCEL__API_KEY }}
+      APP__XCEL__MERCHANT_ID: ${{ secrets.APP__XCEL__MERCHANT_ID }}
+      APP__XCEL__PRODUCT_ID: ${{ vars.APP__XCEL__PRODUCT_ID }}
+      
+      APP__S3__ACCESS_KEY_ID: ${{ secrets.APP__S3__ACCESS_KEY_ID }}
+      APP__S3__SECRET_ACCESS_KEY: ${{ secrets.APP__S3__SECRET_ACCESS_KEY }}
+      APP__S3__BUCKET: ${{ vars.APP__S3__BUCKET }}
+      APP__S3__REGION: ${{ vars.APP__S3__REGION }}
+
+      RUN_MODE: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- Neon branch for clean DB ---
+      - name: Create Neon branch
+        id: neon
+        uses: neondatabase/create-branch-action@v5
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch_name: ci/e2e-${{ github.run_id }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+
+      - name: Set branch database URL
+        run: echo "APP__DATABASE__URL=${{ steps.neon.outputs.db_url_with_pooler }}" >> $GITHUB_ENV
+
+      # --- Build ---
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Cache (Restore ONLY)
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "actix-diesel-async-starter-ci-cache"
+          save-if: false 
+
+      - name: Build binaries with E2E mocks
+        run: cargo build --locked -p actix-diesel-async-starter -p migrator --features ci
+
+      # --- Migrate & Seed ---
+      - name: Run migrations
+        run: ./target/debug/migrator
+
+      - name: Setup Python & Seed
+        run: |
+          pip install psycopg2-binary
+          DATABASE_URL="${APP__DATABASE__URL}" python scripts/seed.py
+
+      # --- Start server & test ---
+      - name: Start server
+        run: |
+          # Execute the compiled binary directly
+          ./target/debug/actix-diesel-async-starter &
+          
+          # MAGIC 6: Use your actual healthcheck endpoint. It verifies DB and Redis connections properly.
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8080/api/healthcheck > /dev/null 2>&1; then
+              echo "Server is ready"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Run E2E Public API
+        run: npx newman run tests/postman/collections/01_public.json -e tests/postman/env.ci.json --reporters cli,junit --reporter-junit-export results-public.xml
+
+      - name: Run E2E Authentication
+        run: npx newman run tests/postman/collections/02_auth.json -e tests/postman/env.ci.json --reporters cli,junit --reporter-junit-export results-auth.xml
+
+      - name: Run E2E Admin Management
+        run: npx newman run tests/postman/collections/03_admin.json -e tests/postman/env.ci.json --reporters cli,junit --reporter-junit-export results-admin.xml
+
+      - name: Run E2E Bus Booking
+        run: npx newman run tests/postman/collections/04_bus_booking.json -e tests/postman/env.ci.json --reporters cli,junit --reporter-junit-export results-bus.xml
+
+      - name: Run E2E Trotro Pass
+        run: npx newman run tests/postman/collections/05_trotro_pass.json -e tests/postman/env.ci.json --reporters cli,junit --reporter-junit-export results-trotro.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: newman-results
+          path: results-*.xml
+
+      # --- Cleanup ---
+      - name: Delete Neon branch
+        if: always()
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch: ci/e2e-${{ github.run_id }}
+          api_key: ${{ secrets.NEON_API_KEY }}

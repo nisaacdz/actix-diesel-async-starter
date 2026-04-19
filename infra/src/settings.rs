@@ -58,7 +58,6 @@ pub struct Settings {
     pub clients: WebClientsSettings,
     pub frogsms: FrogsmsSettings,
     pub redis: RedisSettings,
-    pub qr: QrSettings,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -67,19 +66,4 @@ pub struct FrogsmsSettings {
     pub username: String,
     pub sender_id: String,
     pub base_url: String,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-pub struct QrSettings {
-    #[serde(with = "deserialize_hex_key")]
-    pub master_key: Vec<u8>,
-}
-
-mod deserialize_hex_key {
-    use serde::{Deserialize, Deserializer};
-    pub fn deserialize<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Vec<u8>, D::Error> {
-        let s = String::deserialize(deserializer)?;
-
-        hex::decode(s).map_err(serde::de::Error::custom)
-    }
 }

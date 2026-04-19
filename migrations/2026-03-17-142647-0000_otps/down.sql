@@ -1,0 +1,3 @@
+-- OTPs
+
+DROP TABLE IF EXISTS otps;

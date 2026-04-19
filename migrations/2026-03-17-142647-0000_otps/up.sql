@@ -1,0 +1,14 @@
+-- OTPs (One-Time Passwords)
+
+CREATE TABLE otps (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+    phone VARCHAR(255) NOT NULL UNIQUE,
+    code VARCHAR(12) NOT NULL,
+    payload JSONB,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON otps
+    FOR EACH ROW EXECUTE FUNCTION update_timestamp();

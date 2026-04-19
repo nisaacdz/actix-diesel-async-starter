@@ -1,0 +1,13 @@
+-- Users
+
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+    phone VARCHAR(15) NOT NULL UNIQUE,
+    email VARCHAR(55) UNIQUE,
+    full_name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON users
+    FOR EACH ROW EXECUTE FUNCTION update_timestamp();
